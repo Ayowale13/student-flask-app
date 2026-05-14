@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LAUTECH — Student Performance Prediction System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- ═══════════════════════  HEADER  ═══════════════════════ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="logo-circle">🎓</div>
+      <div class="logo-text">
+        <span class="uni-name">LAUTECH</span>
+        <span class="uni-sub">Ladoke Akintola University of Technology</span>
+      </div>
+    </div>
+    <div class="header-badge">
+      <span>AI-Powered</span>
+      <span class="badge-sub">Student Performance Prediction System</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════  HERO BANNER  ═══════════════════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Student Performance Prediction</h1>
+    <p>An Artificial Intelligence system that identifies at-risk students using non-academic factors — enabling early intervention and academic support.</p>
+    <div class="hero-chips">
+      <span class="chip">🏫 Attendance</span>
+      <span class="chip">📚 Study Habits</span>
+      <span class="chip">🏠 Family Environment</span>
+      <span class="chip">💪 Wellbeing</span>
+      <span class="chip">🎭 Extracurricular</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════  RESULT PANEL  ═══════════════════════ -->
+{% if result %}
+<section class="result-section">
+  <div class="result-card {{ result.label_class }}">
+    <div class="result-header">
+      <div class="result-icon">
+        {% if result.label_class == 'high' %}🟢
+        {% elif result.label_class == 'average' %}🟡
+        {% else %}🔴{% endif %}
+      </div>
+      <div>
+        <div class="result-title">Prediction Result</div>
+        <div class="result-label">{{ result.label }}</div>
+      </div>
+      <div class="confidence-badge">{{ result.confidence }}% confident</div>
+    </div>
+
+    <!-- Probability bars -->
+    <div class="prob-section">
+      <h3>Class Probability Breakdown</h3>
+      <div class="prob-row">
+        <span class="prob-label">🔴 At-Risk / Low</span>
+        <div class="prob-bar-wrap">
+          <div class="prob-bar bar-low" style="width: {{ result.prob_low }}%"></div>
+        </div>
+        <span class="prob-pct">{{ result.prob_low }}%</span>
+      </div>
+      <div class="prob-row">
+        <span class="prob-label">🟡 Medium / Average</span>
+        <div class="prob-bar-wrap">
+          <div class="prob-bar bar-med" style="width: {{ result.prob_med }}%"></div>
+        </div>
+        <span class="prob-pct">{{ result.prob_med }}%</span>
+      </div>
+      <div class="prob-row">
+        <span class="prob-label">🟢 High Performance</span>
+        <div class="prob-bar-wrap">
+          <div class="prob-bar bar-high" style="width: {{ result.prob_high }}%"></div>
+        </div>
+        <span class="prob-pct">{{ result.prob_high }}%</span>
+      </div>
+    </div>
+
+    <!-- Advisor advice -->
+    <div class="advice-box">
+      <div class="advice-icon">💬</div>
+      <div>
+        <strong>Advisor Recommendation</strong>
+        <p>{{ result.advice }}</p>
+      </div>
+    </div>
+
+    <!-- Risk flags -->
+    {% if result.flags %}
+    <div class="flags-box">
+      <strong>⚠️ Risk Flags Detected</strong>
+      <ul>
+        {% for flag in result.flags %}
+        <li>{{ flag }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <a href="/" class="btn-new">🔄 Predict Another Student</a>
+  </div>
+</section>
+{% endif %}
+
+{% if error %}
+<div class="error-banner">⚠️ Error: {{ error }}</div>
+{% endif %}
+
+<!-- ═══════════════════════  FORM  ═══════════════════════ -->
+<main class="main-container">
+  <div class="form-card">
+    <div class="form-card-header">
+      <h2>📋 Student Non-Academic Data Entry</h2>
+      <p>Fill in all fields below. All inputs are non-academic — no grades required.</p>
+    </div>
+
+    <form action="/predict" method="POST">
+
+      <!-- ── SECTION 1: DEMOGRAPHIC ── -->
+      <div class="form-section">
+        <div class="section-label">
+          <span class="section-icon">👤</span>
+          <span>Demographic Information</span>
+        </div>
+        <div class="field-grid">
+
+          <div class="field-group">
+            <label>Gender</label>
+            <select name="sex" required>
+              <option value="" disabled selected>Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Age <span class="hint">(15–22)</span></label>
+            <input type="number" name="age" min="15" max="22" placeholder="e.g. 18" required/>
+          </div>
+
+          <div class="field-group">
+            <label>Home Location</label>
+            <select name="address" required>
+              <option value="" disabled selected>Select location</option>
+              <option value="Urban">Urban</option>
+              <option value="Rural">Rural</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Family Size</label>
+            <select name="famsize" required>
+              <option value="" disabled selected>Select family size</option>
+              <option value="Greater than 3 (GT3)">Greater than 3 (GT3)</option>
+              <option value="Less or equal to 3 (LE3)">3 or fewer (LE3)</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Parents' Cohabitation</label>
+            <select name="Pstatus" required>
+              <option value="" disabled selected>Select status</option>
+              <option value="Living Together (T)">Living Together</option>
+              <option value="Apart (A)">Living Apart</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Guardian</label>
+            <select name="guardian" required>
+              <option value="" disabled selected>Select guardian</option>
+              <option value="Mother">Mother</option>
+              <option value="Father">Father</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── SECTION 2: FAMILY / HOME ENVIRONMENT ── -->
+      <div class="form-section">
+        <div class="section-label">
+          <span class="section-icon">🏠</span>
+          <span>Family &amp; Home Environment</span>
+        </div>
+        <div class="field-grid">
+
+          <div class="field-group">
+            <label>Mother's Education Level <span class="hint">0=None → 4=Higher</span></label>
+            <select name="Medu" required>
+              <option value="" disabled selected>Select level</option>
+              <option value="0">0 — None</option>
+              <option value="1">1 — Primary school</option>
+              <option value="2">2 — 5th to 9th grade</option>
+              <option value="3">3 — Secondary education</option>
+              <option value="4">4 — Higher education</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Father's Education Level <span class="hint">0=None → 4=Higher</span></label>
+            <select name="Fedu" required>
+              <option value="" disabled selected>Select level</option>
+              <option value="0">0 — None</option>
+              <option value="1">1 — Primary school</option>
+              <option value="2">2 — 5th to 9th grade</option>
+              <option value="3">3 — Secondary education</option>
+              <option value="4">4 — Higher education</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Mother's Job</label>
+            <select name="Mjob" required>
+              <option value="" disabled selected>Select job</option>
+              <option value="At Home">At Home</option>
+              <option value="Health">Health</option>
+              <option value="Teacher">Teacher</option>
+              <option value="Services">Services</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Father's Job</label>
+            <select name="Fjob" required>
+              <option value="" disabled selected>Select job</option>
+              <option value="At Home">At Home</option>
+              <option value="Health">Health</option>
+              <option value="Teacher">Teacher</option>
+              <option value="Services">Services</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Reason for Choosing School</label>
+            <select name="reason" required>
+              <option value="" disabled selected>Select reason</option>
+              <option value="Course Preference">Course Preference</option>
+              <option value="Home Proximity">Home Proximity</option>
+              <option value="Reputation">Reputation</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Internet Access at Home</label>
+            <select name="internet" required>
+              <option value="" disabled selected>Yes / No</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Family Educational Support</label>
+            <select name="famsup" required>
+              <option value="" disabled selected>Yes / No</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Family Relationship Quality <span class="hint">1=Very Bad → 5=Excellent</span></label>
+            <select name="famrel" required>
+              <option value="" disabled selected>Select quality</option>
+              <option value="1">1 — Very Bad</option>
+              <option value="2">2 — Bad</option>
+              <option value="3">3 — Neutral</option>
+              <option value="4">4 — Good</option>
+              <option value="5">5 — Excellent</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── SECTION 3: STUDY HABITS ── -->
+      <div class="form-section">
+        <div class="section-label">
+          <span class="section-icon">📚</span>
+          <span>Study Habits &amp; Time Management</span>
+        </div>
+        <div class="field-grid">
+
+          <div class="field-group">
+            <label>Weekly Study Time <span class="hint">1=&lt;2h … 4=&gt;10h</span></label>
+            <select name="studytime" required>
+              <option value="" disabled selected>Select study time</option>
+              <option value="1">1 — Less than 2 hours</option>
+              <option value="2">2 — 2 to 5 hours</option>
+              <option value="3">3 — 5 to 10 hours</option>
+              <option value="4">4 — More than 10 hours</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Travel Time to School <span class="hint">1=&lt;15min … 4=&gt;1hr</span></label>
+            <select name="traveltime" required>
+              <option value="" disabled selected>Select travel time</option>
+              <option value="1">1 — Less than 15 min</option>
+              <option value="2">2 — 15 to 30 min</option>
+              <option value="3">3 — 30 min to 1 hour</option>
+              <option value="4">4 — More than 1 hour</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Past Class Failures</label>
+            <select name="failures" required>
+              <option value="" disabled selected>Select failures</option>
+              <option value="0">0 — None</option>
+              <option value="1">1 failure</option>
+              <option value="2">2 failures</option>
+              <option value="3">3 or more</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Number of Absences <span class="hint">(0–93)</span></label>
+            <input type="number" name="absences" min="0" max="93" placeholder="e.g. 4" required/>
+          </div>
+
+          <div class="field-group">
+            <label>Extra School Support</label>
+            <select name="schoolsup" required>
+              <option value="" disabled selected>Yes / No</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Extra Paid Classes</label>
+            <select name="paid" required>
+              <option value="" disabled selected>Yes / No</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Attended Nursery School</label>
+            <select name="nursery" required>
+              <option value="" disabled selected>Yes / No</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Wants Higher Education</label>
+            <select name="higher" required>
+              <option value="" disabled selected>Yes / No</option>
+              <option value="Yes">Yes — Aspires to university</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── SECTION 4: HEALTH & WELLBEING ── -->
+      <div class="form-section">
+        <div class="section-label">
+          <span class="section-icon">💪</span>
+          <span>Health &amp; Wellbeing</span>
+        </div>
+        <div class="field-grid">
+
+          <div class="field-group">
+            <label>Current Health Status <span class="hint">1=Very Bad → 5=Very Good</span></label>
+            <select name="health" required>
+              <option value="" disabled selected>Select health</option>
+              <option value="1">1 — Very Bad</option>
+              <option value="2">2 — Bad</option>
+              <option value="3">3 — Fair</option>
+              <option value="4">4 — Good</option>
+              <option value="5">5 — Very Good</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Workday Alcohol Consumption <span class="hint">1=Very Low → 5=Very High</span></label>
+            <select name="Dalc" required>
+              <option value="" disabled selected>Select level</option>
+              <option value="1">1 — Very Low</option>
+              <option value="2">2 — Low</option>
+              <option value="3">3 — Moderate</option>
+              <option value="4">4 — High</option>
+              <option value="5">5 — Very High</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Weekend Alcohol Consumption <span class="hint">1=Very Low → 5=Very High</span></label>
+            <select name="Walc" required>
+              <option value="" disabled selected>Select level</option>
+              <option value="1">1 — Very Low</option>
+              <option value="2">2 — Low</option>
+              <option value="3">3 — Moderate</option>
+              <option value="4">4 — High</option>
+              <option value="5">5 — Very High</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>In a Romantic Relationship</label>
+            <select name="romantic" required>
+              <option value="" disabled selected>Yes / No</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── SECTION 5: EXTRACURRICULAR ── -->
+      <div class="form-section">
+        <div class="section-label">
+          <span class="section-icon">🎭</span>
+          <span>Extracurricular &amp; Lifestyle</span>
+        </div>
+        <div class="field-grid">
+
+          <div class="field-group">
+            <label>Extracurricular Activities</label>
+            <select name="activities" required>
+              <option value="" disabled selected>Yes / No</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Free Time After School <span class="hint">1=Very Low → 5=Very High</span></label>
+            <select name="freetime" required>
+              <option value="" disabled selected>Select level</option>
+              <option value="1">1 — Very Low</option>
+              <option value="2">2 — Low</option>
+              <option value="3">3 — Moderate</option>
+              <option value="4">4 — High</option>
+              <option value="5">5 — Very High</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Going Out with Friends <span class="hint">1=Very Low → 5=Very High</span></label>
+            <select name="goout" required>
+              <option value="" disabled selected>Select frequency</option>
+              <option value="1">1 — Very Low</option>
+              <option value="2">2 — Low</option>
+              <option value="3">3 — Moderate</option>
+              <option value="4">4 — High</option>
+              <option value="5">5 — Very High</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="submit-row">
+        <button type="submit" class="btn-predict">🔍 &nbsp; Predict Student Performance</button>
+        <button type="reset" class="btn-reset">↺ Clear Form</button>
+      </div>
+
+    </form>
+  </div>
+</main>
+
+<!-- ═══════════════════════  FOOTER  ═══════════════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <strong>LAUTECH Student Performance Prediction System</strong><br/>
+      Developed by: <em>Akinade Iyabo Elizabeth (2021007529)</em><br/>
+      Supervisor: Mrs. Ogunniyi &nbsp;|&nbsp; Department of Computer Science
+    </div>
+    <div class="footer-note">
+      Faculty of Computing and Informatics &nbsp;·&nbsp; May 2026<br/>
+      <small>Powered by Random Forest · Non-Academic Predictors Only · UCI Dataset</small>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
